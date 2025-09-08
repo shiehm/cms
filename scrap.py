@@ -4,7 +4,7 @@ from app import app
 
 app.config['TESTING'] = True
 client = app.test_client()
-response = client.get('/')
+response = client.get('/files/ext.ext')
 print(response)
 
 status = [
@@ -26,18 +26,20 @@ data = [
     response.text,               # Response data as text/string
 ]
 
-# for item in data:
-#     print(item)
+for item in data:
+    print(item)
 
 headers = [
     # response.headers,            # All headers as a dict-like object
-    # response.headers.get('Content-Type'),  # Get specific header
+    response.headers.get('Location'),  # Get specific header
     # response.headers['Location'],          # Direct access to header
-    list(response.headers)      # Get all header names
+    # list(response.headers)      # Get all header names
 ]
 
 for item in headers:
     print(item)
+
+print(get_flashed_messages())
 
 # response.cookies            # Cookie jar with all cookies
 # response.set_cookie(...)    # Set a cookie (though rarely used in testing)
