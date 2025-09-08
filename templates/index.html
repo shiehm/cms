@@ -5,10 +5,13 @@
     <title>File List</title>
 </head>
 <body>
+    {% for message in get_flashed_messages()%}
+        <p>{{ message }}</p>
+    {% endfor %}
     <ul>
         {% for file in files %}
         <li>
-            <a href="{{ url_for('file_content', name=file) }}">{{ file }}</a>
+            <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a>
         </li>
         {% endfor %}
     </ul>
