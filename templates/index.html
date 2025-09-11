@@ -1,23 +1,13 @@
-<!doctype html>
-<html lang="en-US">
-<head>
-    <meta charset="UTF-8">
-    <title>File List</title>
-</head>
-<body>
-    {% for line in markdown_text %}
-        {{ line }}
+{% extends 'layout.html' %}
+
+{% block content %}
+<ul>
+    {% for file in files %}
+    <li>
+        <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a> 
+        <a href="{{ url_for('edit_file', file_name=file) }}">Edit</a>
+        <a href="{{ url_for('download_file', file_name=file) }}">Download</a>
+    </li>
     {% endfor %}
-    
-    {% for message in get_flashed_messages()%}
-        <p>{{ message }}</p>
-    {% endfor %}
-    <ul>
-        {% for file in files %}
-        <li>
-            <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a>
-        </li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+</ul>
+{% endblock %}
