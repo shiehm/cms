@@ -15,8 +15,8 @@ from werkzeug.exceptions import NotFound
 
 app = Flask(__name__)
 app.secret_key = 'secret1'
-
 root = os.path.abspath(os.path.dirname(__file__))
+
 def get_data_path():
     if app.config['TESTING']:
         return os.path.join(root, 'tests', 'data')
@@ -75,6 +75,35 @@ def submit_changes(file_name):
         file.write(content)
 
     flash(f'{file_name} has been edited.', 'success')
+    return redirect(url_for('index'))
+
+@app.route("/new")
+def new_document():
+    return render_template('new.html')
+
+@app.route("/create", methods=["POST"])
+def create_document():
+    document_name = request.form.get('document_name', '').strip()
+    data = get_data_path()
+    file_path = os.path.join(data, document_name)
+
+    if len(document_name) == 0:
+        flash('A name is required.')
+        return render_template('new.html'), 422
+    elif os.path.exists(file_path):
+        flash(f'{document_name} already exists.')
+        return render_template('new.html'), 422
+    else:
+        with open(file_path, 'w') as file:
+            file.write('')
+        flash(f'{document_name} was created successfully', 'success')
+        return redirect(url_for('index'))
+
+@app.route("/delete")
+def delete_document(file_name):
+    data = get_data_path()
+    file_path = os.path.join(data, file_name)
+    os.remove(file_path)
     return redirect(url_for('index'))
 
 if __name__ == "__main__":

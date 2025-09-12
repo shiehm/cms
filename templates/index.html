@@ -1,12 +1,16 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+<p>
+    <a href="{{ url_for('new_document') }}">Create a New Document</a>
+</p>
 <ul>
     {% for file in files %}
     <li>
         <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a> 
         <a href="{{ url_for('edit_file', file_name=file) }}">Edit</a>
         <a href="{{ url_for('download_file', file_name=file) }}">Download</a>
+        <a href="{{ url_for('download_file', file_name=file) }}">Delete</a>
     </li>
     {% endfor %}
 </ul>

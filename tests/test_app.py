@@ -82,6 +82,28 @@ class AppTest(unittest.TestCase):
         with self.client.get("/changes.txt") as content_response:
             self.assertEqual(content_response.status_code, 200)
             self.assertIn("New content.", content_response.get_data(as_text=True))
+    
+    def test_new_document_form(self):
+        response = self.client.get('/new')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("<input ", response.text)
+        self.assertIn("<button type=", response.text)
+    
+    def test_create_new_document(self):
+        response = self.client.post('/create', 
+                                    data={'document_name': 'test_file.txt'},
+                                    follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('test_file.txt was created successfully', response.get_data(as_text=True))
+        
+        response = self.client.get('/')
+        print(response)
+        self.assertIn('test_file.txt', response.get_data(as_text=True))
+
+    def test_create_new_document_without_name(self):
+        response = self.client.post('/create', data={'document_name': ''})
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("A name is required.", response.get_data(as_text=True))
 
 if __name__ == "__main__":
     unittest.main()
