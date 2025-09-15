@@ -99,11 +99,17 @@ def create_document():
         flash(f'{document_name} was created successfully', 'success')
         return redirect(url_for('index'))
 
-@app.route("/delete")
-def delete_document(file_name):
+@app.route("/<path:file_name>/delete", methods=["POST"])
+def delete_file(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
-    os.remove(file_path)
+    
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+        flash(f'{file_name} has been deleted.')
+    else:
+        flash(f'{file_name} does not exist.')
+
     return redirect(url_for('index'))
 
 if __name__ == "__main__":

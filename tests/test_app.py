@@ -105,5 +105,15 @@ class AppTest(unittest.TestCase):
         self.assertEqual(response.status_code, 422)
         self.assertIn("A name is required.", response.get_data(as_text=True))
 
+    def test_deleting_document(self):
+        self.create_document("test.txt")
+
+        response = self.client.post('/test.txt/delete', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("test.txt has been deleted", response.get_data(as_text=True))
+
+        response = self.client.get('/')
+        self.assertNotIn("test.txt", response.get_data(as_text=True))
+
 if __name__ == "__main__":
     unittest.main()
