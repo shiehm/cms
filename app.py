@@ -30,7 +30,7 @@ def validate_user(username, password):
 def logged_in():
     return 'username' in session
 
-def requre_login(func):
+def require_login(func):
     @wraps(func)
     def decorated_func(*args, **kwargs):
         if not logged_in():
@@ -65,15 +65,12 @@ def signout():
     return redirect(url_for('index'))
 
 @app.route('/')
-@requre_login
 def index():
     data = get_data_path()
     files = os.listdir(data) 
-    username = session['username']
-    return render_template('index.html', files=files, username=username)
+    return render_template('index.html', files=files)
 
 @app.route("/<path:file_name>")
-@requre_login
 def file_content(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
@@ -90,7 +87,6 @@ def file_content(file_name):
         return redirect(url_for('index'))
 
 @app.route("/<path:file_name>/download")
-@requre_login
 def download_file(file_name):
     return send_from_directory(
         get_data_path(), 
@@ -99,7 +95,7 @@ def download_file(file_name):
     )
 
 @app.route("/<path:file_name>/edit")
-@requre_login
+@require_login
 def edit_file(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
@@ -113,7 +109,7 @@ def edit_file(file_name):
         return redirect(url_for('index'))
 
 @app.route("/<path:file_name>", methods=["POST"])
-@requre_login
+@require_login
 def submit_changes(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
@@ -121,16 +117,16 @@ def submit_changes(file_name):
     with open(file_path, 'w') as file:
         file.write(content)
 
-    flash(f'{file_name} has been edited.', 'success')
+    flash(f'{file_name} has been updated.', 'success')
     return redirect(url_for('index'))
 
 @app.route("/new")
-@requre_login
+@require_login
 def new_document():
     return render_template('new.html')
 
 @app.route("/create", methods=["POST"])
-@requre_login
+@require_login
 def create_document():
     document_name = request.form.get('document_name', '').strip()
     data = get_data_path()
@@ -145,11 +141,11 @@ def create_document():
     else:
         with open(file_path, 'w') as file:
             file.write('')
-        flash(f'{document_name} was created successfully', 'success')
+        flash(f'{document_name} has been created', 'success')
         return redirect(url_for('index'))
 
 @app.route("/<path:file_name>/delete", methods=["POST"])
-@requre_login
+@require_login
 def delete_file(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)

@@ -1,8 +1,6 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-
-{% if session.username %}
     <p>
         <a href="{{ url_for('new_document') }}">Create a New Document</a>
     </p>
@@ -19,7 +17,7 @@
         {% endfor %}
     </ul>
 
-
+{% if session.username %}
     <form action="{{ url_for('signout') }}" method="post">
         <p class="user-status"> 
             Signed in as {{session.username}}
