@@ -1,19 +1,35 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-<p>
-    <a href="{{ url_for('new_document') }}">Create a New Document</a>
-</p>
-<ul>
-    {% for file in files %}
-    <li>
-        <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a> 
-        <a href="{{ url_for('edit_file', file_name=file) }}">Edit</a>
-        <a href="{{ url_for('download_file', file_name=file) }}">Download</a>
-        <form class="inline" method="post" action="{{ url_for('delete_file', file_name=file) }}">
-            <button type=""submit>Delete</button>
-        </form>
-    </li>
-    {% endfor %}
-</ul>
+
+{% if session.username %}
+    <p>
+        <a href="{{ url_for('new_document') }}">Create a New Document</a>
+    </p>
+    <ul>
+        {% for file in files %}
+        <li>
+            <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a> 
+            <a href="{{ url_for('edit_file', file_name=file) }}">Edit</a>
+            <a href="{{ url_for('download_file', file_name=file) }}">Download</a>
+            <form class="inline" method="post" action="{{ url_for('delete_file', file_name=file) }}">
+                <button type=""submit>Delete</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+
+
+    <form action="{{ url_for('signout') }}" method="post">
+        <p class="user-status"> 
+            Signed in as {{session.username}}
+            <button type="submit">Sign Out</button>
+        </p>
+    </form>
+{% else %}
+    <p class="user-status">
+        <a href="{{ url_for('signin') }}">Sign In</a>
+    </p>
+{% endif %}
+
 {% endblock %}

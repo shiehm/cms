@@ -17,33 +17,47 @@ app = Flask(__name__)
 app.secret_key = 'secret1'
 root = os.path.abspath(os.path.dirname(__file__))
 
+def validate_user(username, password):
+    return username == 'admin' and password == 'secret'
+
 def get_data_path():
     if app.config['TESTING']:
         return os.path.join(root, 'tests', 'data')
     else:
         return os.path.join(root, 'cms', 'data')
 
-@app.route('/users/signin')
+@app.route('/users/signin', methods=["GET", "POST"])
 def signin():
+    if request.method == "POST":
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if validate_user(username, password):
+            session['logged_in'] = True
+            session['username'] = username
+            flash('Welcome')
+            return redirect(url_for('index'))
+        else:
+            flash('Invalid credentials')
+            return render_template('signin.html'), 422
+    
     return render_template('signin.html')
 
-@app.route('/signin', methods=["POST"])
-def sign_in():
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-    if validate_user(username, password):
-        session['logged_in'] = True
-        session['username'] = username
-        return redirect(url_for('/'))
-    else:
-        return redirect(url_for('signin'))
+@app.route('/users/signout', methods=["POST"])
+def signout():
+    session['logged_in'] = False
+    session.pop('username')
+    flash('You have been signed out')
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
+    if 'username' not in session:
+        return redirect(url_for('signin'))
     data = get_data_path()
     files = os.listdir(data) 
-    return render_template('index.html', files=files)
+    username = session['username']
+    return render_template('index.html', files=files, username=username)
 
 @app.route("/<path:file_name>")
 def file_content(file_name):

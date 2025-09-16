@@ -9,6 +9,9 @@ class AppTest(unittest.TestCase):
         self.client = app.test_client()
         self.data_path = os.path.join(os.path.dirname(__file__), 'data')
         os.makedirs(self.data_path, exist_ok=True)
+        self.client.post('/users/signin',
+                         data={'username': 'admin', 'password': 'secret'},
+                         follow_redirects=True)
 
     def tearDown(self):
         shutil.rmtree(self.data_path, ignore_errors=True)
@@ -116,6 +119,8 @@ class AppTest(unittest.TestCase):
         self.assertNotIn("test.txt", response.get_data(as_text=True))
 
     def test_signin_form(self):
+        # Sign out first to test sign in form page, since setUp() signs us in. 
+        self.client.post('/users/signout', follow_redirects=True)
         response = self.client.get('/users/signin')
         self.assertEqual(response.status_code, 200)
         self.assertIn("<input", response.get_data(as_text=True))
