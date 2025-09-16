@@ -23,6 +23,22 @@ def get_data_path():
     else:
         return os.path.join(root, 'cms', 'data')
 
+@app.route('/users/signin')
+def signin():
+    return render_template('signin.html')
+
+@app.route('/signin', methods=["POST"])
+def sign_in():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    if validate_user(username, password):
+        session['logged_in'] = True
+        session['username'] = username
+        return redirect(url_for('/'))
+    else:
+        return redirect(url_for('signin'))
+
 @app.route('/')
 def index():
     data = get_data_path()

@@ -115,5 +115,40 @@ class AppTest(unittest.TestCase):
         response = self.client.get('/')
         self.assertNotIn("test.txt", response.get_data(as_text=True))
 
+    def test_signin_form(self):
+        response = self.client.get('/users/signin')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("<input", response.get_data(as_text=True))
+        self.assertIn('<button type="submit"', response.get_data(as_text=True))
+
+    def test_signin(self):
+        response = self.client.post('/users/signin',
+                                    data={
+                                        'username': 'admin',
+                                        'password': 'secret',
+                                    },
+                                    follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Welcome", response.get_data(as_text=True))
+        self.assertIn("Signed in as admin", response.get_data(as_text=True))
+
+    def test_signin_with_bad_credentials(self):
+        response = self.client.post('/users/signin',
+                                    data={
+                                        'username': 'guest',
+                                        'password': 'shhhh',
+                                    })
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("Invalid credentials", response.get_data(as_text=True))
+
+    def test_signout(self):
+        self.client.post('/users/signin',
+                         data={'username': 'admin', 'password': 'secret'},
+                         follow_redirects=True)
+        response = self.client.post('/users/signout', follow_redirects=True)
+        self.assertIn("You have been signed out",
+                      response.get_data(as_text=True))
+        self.assertIn("Sign In", response.get_data(as_text=True))
+
 if __name__ == "__main__":
     unittest.main()
