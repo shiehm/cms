@@ -10,6 +10,7 @@ from flask import (
     session,
     url_for,
 )
+from functools import wraps
 from markdown import markdown
 from werkzeug.exceptions import NotFound
 
@@ -17,31 +18,44 @@ app = Flask(__name__)
 app.secret_key = 'secret1'
 root = os.path.abspath(os.path.dirname(__file__))
 
-def validate_user(username, password):
-    return username == 'admin' and password == 'secret'
-
 def get_data_path():
     if app.config['TESTING']:
         return os.path.join(root, 'tests', 'data')
     else:
         return os.path.join(root, 'cms', 'data')
 
-@app.route('/users/signin', methods=["GET", "POST"])
-def signin():
-    if request.method == "POST":
-        username = request.form.get('username')
-        password = request.form.get('password')
+def validate_user(username, password):
+    return username == 'admin' and password == 'secret'
 
-        if validate_user(username, password):
-            session['logged_in'] = True
-            session['username'] = username
-            flash('Welcome')
-            return redirect(url_for('index'))
-        else:
-            flash('Invalid credentials')
-            return render_template('signin.html'), 422
-    
+def logged_in():
+    return 'username' in session
+
+def requre_login(func):
+    @wraps(func)
+    def decorated_func(*args, **kwargs):
+        if not logged_in():
+            flash('You must be signed in to do that.')
+            return redirect(url_for('show_signin_form'))
+        return func(*args, **kwargs)
+    return decorated_func
+
+@app.route('/users/signin')
+def show_signin_form():
     return render_template('signin.html')
+
+@app.route('/users/signin', methods=["POST"])
+def signin():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    if validate_user(username, password):
+        session['logged_in'] = True
+        session['username'] = username
+        flash('Welcome')
+        return redirect(url_for('index'))
+    else:
+        flash('Invalid credentials')
+        return render_template('signin.html'), 422
 
 @app.route('/users/signout', methods=["POST"])
 def signout():
@@ -51,15 +65,15 @@ def signout():
     return redirect(url_for('index'))
 
 @app.route('/')
+@requre_login
 def index():
-    if 'username' not in session:
-        return redirect(url_for('signin'))
     data = get_data_path()
     files = os.listdir(data) 
     username = session['username']
     return render_template('index.html', files=files, username=username)
 
 @app.route("/<path:file_name>")
+@requre_login
 def file_content(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
@@ -76,6 +90,7 @@ def file_content(file_name):
         return redirect(url_for('index'))
 
 @app.route("/<path:file_name>/download")
+@requre_login
 def download_file(file_name):
     return send_from_directory(
         get_data_path(), 
@@ -84,6 +99,7 @@ def download_file(file_name):
     )
 
 @app.route("/<path:file_name>/edit")
+@requre_login
 def edit_file(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
@@ -97,6 +113,7 @@ def edit_file(file_name):
         return redirect(url_for('index'))
 
 @app.route("/<path:file_name>", methods=["POST"])
+@requre_login
 def submit_changes(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)
@@ -108,10 +125,12 @@ def submit_changes(file_name):
     return redirect(url_for('index'))
 
 @app.route("/new")
+@requre_login
 def new_document():
     return render_template('new.html')
 
 @app.route("/create", methods=["POST"])
+@requre_login
 def create_document():
     document_name = request.form.get('document_name', '').strip()
     data = get_data_path()
@@ -130,6 +149,7 @@ def create_document():
         return redirect(url_for('index'))
 
 @app.route("/<path:file_name>/delete", methods=["POST"])
+@requre_login
 def delete_file(file_name):
     data = get_data_path()
     file_path = os.path.join(data, file_name)

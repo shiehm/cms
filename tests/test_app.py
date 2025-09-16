@@ -119,8 +119,9 @@ class AppTest(unittest.TestCase):
         self.assertNotIn("test.txt", response.get_data(as_text=True))
 
     def test_signin_form(self):
-        # Sign out first to test sign in form page, since setUp() signs us in. 
+        # Sign out first to test sign in form page, since setUp() signs us in
         self.client.post('/users/signout', follow_redirects=True)
+        
         response = self.client.get('/users/signin')
         self.assertEqual(response.status_code, 200)
         self.assertIn("<input", response.get_data(as_text=True))
