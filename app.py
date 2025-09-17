@@ -1,3 +1,4 @@
+from bcrypt import checkpw, gensalt, hashpw
 import os
 from flask import (
     Flask,
@@ -13,6 +14,7 @@ from flask import (
 from functools import wraps
 from markdown import markdown
 from werkzeug.exceptions import NotFound
+import yaml
 
 app = Flask(__name__)
 app.secret_key = 'secret1'
@@ -24,8 +26,25 @@ def get_data_path():
     else:
         return os.path.join(root, 'cms', 'data')
 
+def get_users_path():
+    if app.config['TESTING']:
+        return os.path.join(root, 'tests')
+    else:
+        return os.path.join(root, 'cms')
+
+def load_users_credentials():
+    users_path = get_users_path()
+    users_file = os.path.join(users_path, 'users.yaml')
+    with open(users_file, 'r') as file:
+        return yaml.safe_load(file)
+
 def validate_user(username, password):
-    return username == 'admin' and password == 'secret'
+    users = load_users_credentials()
+    if username in users:
+        stored_password = users[username].encode('utf-8')
+        return checkpw(password.encode('utf-8'), stored_password)
+    else:
+        return False
 
 def logged_in():
     return 'username' in session
