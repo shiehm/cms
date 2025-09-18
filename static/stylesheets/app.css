@@ -8,8 +8,14 @@ body {
   background: #FFFF99;
 }
 
+.items {
+  display: flex; 
+  align-items: center;
+}
+
 form.inline {
-  display: inline;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .user-status {

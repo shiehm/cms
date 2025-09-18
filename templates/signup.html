@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<!doctype html>
+<html lang="en-US">
+    <form action="{{ url_for('signup') }}" method="post">
+        <div>
+            <label for="create username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ request.form.username | default('') }}"/>
+        </div>
+        <div>
+            <label for="create password">Password:</label>
+            <input type="text" id="password" name="password"/>
+        </div>
+        <button type="submit">Sign Up</button>
+    </form>
+</html>
+{% endblock %}

@@ -1,18 +1,53 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+
+<h1>{{ session.username }} Documents</h1>
     <p>
         <a href="{{ url_for('new_document') }}">Create a New Document</a>
     </p>
     <ul>
         {% for file in files %}
-        <li>
-            <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a> 
-            <a href="{{ url_for('edit_file', file_name=file) }}">Edit</a>
-            <a href="{{ url_for('download_file', file_name=file) }}">Download</a>
-            <form class="inline" method="post" action="{{ url_for('delete_file', file_name=file) }}">
-                <button type=""submit>Delete</button>
-            </form>
+        <li class="items">
+            <div style="width: {{ max_length*8 }}px;">
+                <a href="{{ url_for('file_content', file_name=file) }}">{{ file }}</a> 
+            </div>
+            <div>
+                <form class="inline" method="get" action="{{ url_for('edit_file', file_name=file) }}">
+                    <button type=""submit>Edit</button>
+                </form>
+                <form class="inline" method="get" action="{{ url_for('download_file', file_name=file) }}">
+                    <button type=""submit>Download</button>
+                </form>
+                <form class="inline" method="post" action="{{ url_for('duplicate_file', file_name=file) }}">
+                    <button type=""submit>Duplicate</button>
+                </form>
+                <form class="inline" method="post" action="{{ url_for('delete_file', file_name=file) }}">
+                    <button type=""submit>Delete</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+
+<h1>{{ session.username }} Images</h1>
+    <p>
+        <a href="{{ url_for('upload') }}">Upload an image</a>
+    </p>
+    <ul>
+        {% for image in images %}
+        <li class="items">
+            <div style="width: {{ max_length*8 }}px;">
+                <a href="{{ url_for('show_image', image_name=image) }}">{{ image }}</a> 
+            </div>
+            <div>
+                <form class="inline" method="get" action="{{ url_for('download_image', image_name=image) }}">
+                    <button type=""submit>Download</button>
+                </form>
+                <form class="inline" method="post" action="{{ url_for('delete_image', image_name=image) }}">
+                    <button type=""submit>Delete</button>
+                </form>
+            </div>
         </li>
         {% endfor %}
     </ul>
@@ -20,13 +55,14 @@
 {% if session.username %}
     <form action="{{ url_for('signout') }}" method="post">
         <p class="user-status"> 
-            Signed in as {{session.username}}
+            Signed in as {{ session.username }}
             <button type="submit">Sign Out</button>
         </p>
     </form>
 {% else %}
     <p class="user-status">
         <a href="{{ url_for('signin') }}">Sign In</a>
+        <a href="{{ url_for('show_signup_form') }}">Sign Up</a>
     </p>
 {% endif %}
 

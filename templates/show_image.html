@@ -1,0 +1,5 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <img src="{{ url_for('static', filename='img/' + image_name) }}" alt="This is an image, the file name is {{ image_name }} located at {{ image_path }} ">
+{% endblock %}

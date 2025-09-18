@@ -134,7 +134,7 @@ class CMSTest(unittest.TestCase):
         self.assertIn("test.txt", response.get_data(as_text=True))
 
     def test_create_new_document_signed_out(self):
-        response = self.client.post('/create', data={'filename': 'test.txt'})
+        response = self.client.post('/create', data={'document_name': 'test.txt'})
         self.assertEqual(response.status_code, 302)
 
         follow_response = self.client.get(response.headers['Location'])
@@ -143,9 +143,15 @@ class CMSTest(unittest.TestCase):
 
     def test_create_new_document_without_filename(self):
         client = self.admin_session()
-        response = client.post('/create', data={'filename': ''})
+        response = client.post('/create', data={'document_name': ''})
         self.assertEqual(response.status_code, 422)
         self.assertIn("A name is required", response.get_data(as_text=True))
+
+    def test_create_new_document_without_valid_extension(self):
+        client = self.admin_session()
+        response = self.client.post('/create', data={'document_name': 'test.doc'}, follow_redirects=True)
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("Invalid file type.", response.get_data(as_text=True))
 
     def test_deleting_document(self):
         self.create_document("test.txt")
