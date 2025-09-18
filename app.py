@@ -1,3 +1,7 @@
+# To do: 
+# 1. Modify the CMS so that each version of a document is preserved as changes are made to it.
+# 2. Add tests for all the extra features.
+
 from bcrypt import checkpw, gensalt, hashpw
 from flask import (
     Flask,
@@ -20,6 +24,8 @@ import yaml
 app = Flask(__name__)
 app.secret_key = 'secret1'
 root = os.path.abspath(os.path.dirname(__file__))
+
+accepted_file_types = ['txt', 'md']
 
 def get_data_path():
     if app.config['TESTING']:
@@ -60,8 +66,7 @@ def require_login(func):
     return decorated_func
 
 def validate_file_type(file):
-    accepted_types = ['txt', 'md']
-    return file.split('.')[-1] in accepted_types
+    return file.split('.')[-1] in accepted_file_types
 
 @app.route('/users/signin')
 def show_signin_form():
@@ -113,7 +118,7 @@ def signin():
 @app.route('/users/signout', methods=["POST"])
 def signout():
     session['logged_in'] = False
-    session.pop('username')
+    session.pop('username', None)
     flash('You have been signed out')
     return redirect(url_for('index'))
 
@@ -198,7 +203,7 @@ def create_document():
         flash('A name is required.')
         return render_template('new.html'), 422
     elif not validate_file_type(document_name):
-        flash('Invalid file type.')
+        flash(f'Invalid file type. Valid extensions: {accepted_file_types}')
         return render_template('new.html'), 422
     elif os.path.exists(file_path):
         flash(f'{document_name} already exists.')
